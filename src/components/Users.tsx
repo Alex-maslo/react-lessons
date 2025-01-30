@@ -6,7 +6,6 @@ import { useSearchParams } from "react-router-dom";
 
 const Users = () => {
   const [searchParams] = useSearchParams({ page: "1" });
-
   const [users, setUsers] = useState<IUser[]>([]);
 
   useEffect(() => {
@@ -17,13 +16,15 @@ const Users = () => {
   }, [searchParams]);
 
   return (
-    <div className={`grid grid-cols-6 gap-4 p-3`}>
-      {users && users.length > 0 ? (
-        users.map((user) => <User user={user} key={user.id} />)
-      ) : (
-        <p>Loading...</p>
-      )}
-    </div>
+    <>
+      <div className={`grid grid-cols-6 gap-4 p-3`}>
+        {users && users.length > 0 ? (
+          users.map((user) => <User user={user} key={user.id} />)
+        ) : (
+          <p>Loading...</p>
+        )}
+      </div>
+    </>
   );
 };
 
