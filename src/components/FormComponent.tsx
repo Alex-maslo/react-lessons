@@ -1,4 +1,6 @@
 import { useForm } from "react-hook-form";
+import { joiResolver } from "@hookform/resolvers/joi";
+import { userValidator } from "../validators/user.validator.ts";
 
 interface IFormProps {
   username: string;
@@ -11,7 +13,10 @@ const FormComponent = () => {
     handleSubmit,
     register,
     formState: { errors, isValid },
-  } = useForm<IFormProps>({ mode: "all" });
+  } = useForm<IFormProps>({
+    mode: "all",
+    resolver: joiResolver(userValidator),
+  });
 
   const customHandleSubmit = (formDataProps: IFormProps) => {
     console.log(formDataProps);
@@ -21,42 +26,20 @@ const FormComponent = () => {
     <div>
       <form onSubmit={handleSubmit(customHandleSubmit)}>
         <label>
-          {" "}
-          <input
-            type="text"
-            {...register("username", {
-              pattern: { value: /\w+/, message: "wrong name" },
-              required: true,
-              minLength: { value: 1, message: "wrong name" },
-            })}
-          />
+          <input type="text" {...register("username")} />
           {errors.username && <div>{errors.username.message}</div>}
         </label>
 
         <label>
-          <input
-            type="text"
-            {...register("password", {
-              required: true,
-              minLength: { value: 3, message: "pass to short" },
-              maxLength: { value: 6, message: "pass to long" },
-            })}
-          />
-
+          <input type="text" {...register("password")} />
           {errors.password && <div>{errors.password.message}</div>}
         </label>
 
         <label>
-          <input
-            {...register("age", {
-              required: true,
-              valueAsNumber: true,
-              min: { value: 1, message: "age to small" },
-              max: { value: 117, message: "age to big" },
-            })}
-          />
+          <input {...register("age")} />
           {errors.age && <div>{errors.age.message}</div>}
         </label>
+
         <button disabled={!isValid}>send</button>
       </form>
     </div>
