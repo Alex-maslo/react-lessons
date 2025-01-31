@@ -1,9 +1,10 @@
-import FormComponent from "../components/FormComponent.tsx";
+import App from "../App.tsx";
 
 export const MainLayout = () => {
   return (
     <div>
-      <FormComponent />
+      {/*<FormComponent />*/}
+      <App />
     </div>
   );
 };
