@@ -2,7 +2,7 @@ import axios from "axios";
 import { IUserWithTokens } from "../models/IUserWithTokens.ts";
 import { IProduct } from "../models/IProduct.ts";
 import { IProductsResponseModelType } from "../models/IProductsResponseModelType.ts";
-import { retriveLocalStorage } from "./helpers.ts";
+import { ITokenPair } from "../models/ITokenPair.ts";
 
 type LoginData = {
   username: string;
@@ -15,10 +15,19 @@ const axiosInstance = axios.create({
   headers: {},
 });
 
+const retriveLocalStorage = <T>(key: string) => {
+  const object = localStorage.getItem(key) || "";
+  if (!object) {
+    return {} as T;
+  }
+  const parse = JSON.parse(object).accessToken;
+  return parse as T;
+};
+
 axiosInstance.interceptors.request.use((requestObject) => {
-  if (requestObject.method?.toUpperCase() === "GET") {
-    requestObject.headers.authorization =
-      "Bearer " + retriveLocalStorage<IUserWithTokens>("user").accessToken;
+  if (requestObject.method?.toLocaleUpperCase() === "GET") {
+    requestObject.headers.Authorization =
+      "Bearer " + retriveLocalStorage("user");
   }
 
   return requestObject;
@@ -37,14 +46,29 @@ export const login = async ({
       expiresInMins,
     },
   );
-  console.log(userWithTokens);
   localStorage.setItem("user", JSON.stringify(userWithTokens));
+  console.log(userWithTokens);
   return userWithTokens;
 };
 
 export const loadAuthProducts = async (): Promise<IProduct[]> => {
+  const { data } =
+    await axiosInstance.get<IProductsResponseModelType>("/products");
+  return data.products;
+};
+
+export const refresh = async () => {
+  const iUserWithTokens = retriveLocalStorage<IUserWithTokens>("user");
   const {
-    data: { products },
-  } = await axiosInstance.get<IProductsResponseModelType>("/products/");
-  return products;
+    data: { accessToken, refreshToken },
+  } = await axiosInstance.post<ITokenPair>("/refresh", {
+    refreshToken: iUserWithTokens.refreshToken,
+    expiresInMins: 1,
+  });
+
+  console.log(accessToken);
+  console.log(refreshToken);
+  iUserWithTokens.accessToken = accessToken;
+  iUserWithTokens.refreshToken = refreshToken;
+  localStorage.setItem("user", JSON.stringify(iUserWithTokens));
 };
